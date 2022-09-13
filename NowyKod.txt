@@ -1,0 +1,55 @@
+class Account:
+    def __init__(self, owner, balance):
+        self.owner = owner
+        self.balance = balance
+
+    def get_owner(self):
+        return self.owner
+
+    def get_balance(self):
+        return self.balance
+
+    def deposit(self, amount):
+        self.balance += amount
+
+    def withdraw(self, amount):
+        self.balance -= amount
+
+
+class TestAccount:
+    def setup(self):
+        # Given (part 1)
+        self.owner = "Jan Kowalski"
+        self.account = Account(self.owner, 1000)
+
+    def test_get_owner(self):
+        assert isinstance(self.account.get_owner(), str)
+        assert self.account.get_owner() == self.owner
+
+
+    def test_get_balance(self):
+        assert isinstance(self.account.get_balance(), (int, float))
+
+
+    def test_deposit(self):
+        orig_balance = self.account.get_balance()
+        self.account.deposit(100)
+        assert self.account.get_balance() == 100 + orig_balance
+
+
+    def test_withdraw(self):
+        # Given (part 2)
+        orig_balance = self.account.get_balance()
+        # When
+        self.account.withdraw(100)
+        # Then
+        assert self.account.get_balance() == orig_balance - 100
+
+    def test_withdraw_negative(self):
+        pass
+
+    def test_deposit_negative(self):
+        pass
+
+    def test_deposit_huge(self):
+        pass
