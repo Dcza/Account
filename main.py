@@ -1,5 +1,32 @@
 import pytest
+# Exceptions classes -----------------------------------------------------------------------------------------------
 
+
+class NegativeAmountError(Exception):
+    def __init__(self):
+        super().__init__("Negative amount")
+
+
+class NoMoney(Exception):
+    def __init__(self):
+        super().__init__("No money")
+
+
+class WrongAmountType(Exception):
+    def __init__(self):
+        super().__init__("Wrong amount type")
+
+
+class ZeroAmount(Exception):
+    def __init__(self):
+        super().__init__("Zero amount")
+
+
+class TransferToItself(Exception):
+    def __init__(self):
+        super().__init__("Transfer to itself")
+
+# Exceptions classes -----------------------------------------------------------------------------------------------
 
 class Account:
     def __init__(self, owner, balance):
@@ -14,25 +41,25 @@ class Account:
 
     def deposit(self, amount):
         if amount < 0:
-            raise ValueError("Negative value")
+            raise NegativeAmountError
         else:
             self.balance += amount
 
     def withdraw(self, amount):
         if amount > self.balance:
-            raise ValueError("No money")
+            raise NoMoney
         elif amount < 0:
-            raise ValueError("Negative value")
+            raise NegativeAmountError
         else:
             self.balance -= amount
 
     def transfer_to(self, dst_account, amount):
         if not isinstance(amount, (int, float)):
-            raise ValueError("wrong amount type")
+            raise WrongAmountType
         if amount == 0:
-            raise ValueError("zero amount")
+            raise ZeroAmount
         if dst_account is self:
-            raise ValueError("transfer to itself")
+            raise TransferToItself
         self.withdraw(amount)
         dst_account.deposit(amount)
 
@@ -62,19 +89,19 @@ class TestAccount:
 
     def test_deposit_negative(self):
         orig_balance = self.account.get_balance()
-        with pytest.raises(ValueError, match="Negative value"):
+        with pytest.raises(NegativeAmountError):
             self.account.deposit(-150)
         assert orig_balance == self.account.get_balance()
 
     def test_withdraw_negative(self):
         orig_balance = self.account.get_balance()
-        with pytest.raises(ValueError, match="Negative value"):
+        with pytest.raises(NegativeAmountError):
             self.account.withdraw(-150)
         assert orig_balance == self.account.get_balance()
 
     def test_withdraw_too_much(self):
         orig_balance = self.account.get_balance()
-        with pytest.raises(ValueError, match="No money"):
+        with pytest.raises(NoMoney):
             self.account.withdraw(1500)
         assert orig_balance == self.account.get_balance()
 
@@ -100,26 +127,26 @@ class TestAccountTransfer:
         orig_src_balance = self.src_account.get_balance()
         orig_dst_balance = self.dst_account.get_balance()
         amount_to_transfer = 2*orig_src_balance
-        with pytest.raises(ValueError, match="No money"):
+        with pytest.raises(NoMoney):
             self.src_account.transfer_to(self.dst_account, amount_to_transfer)
         assert self.src_account.get_balance() == orig_src_balance
         assert self.dst_account.get_balance() == orig_dst_balance
 
     def test_transfer_to_negative(self):
-        with pytest.raises(ValueError, match="Negative value"):
+        with pytest.raises(NegativeAmountError):
             self.src_account.transfer_to(self.dst_account, -1000)
         assert self.src_account.get_balance() == 1000
         assert self.dst_account.get_balance() == 100
 
     def test_transfer_to_zero(self):
-        with pytest.raises(ValueError, match="zero amount"):
+        with pytest.raises(ZeroAmount):
             self.src_account.transfer_to(self.dst_account, 0)
 
     def test_transfer_to_itself(self):
-        with pytest.raises(ValueError, match="transfer to itself"):
+        with pytest.raises(TransferToItself):
             self.src_account.transfer_to(self.src_account, 1000.0)
         assert self.src_account.get_balance() == 1000.0
 
     def test_transfer_to_not_number(self):
-        with pytest.raises(ValueError, match="wrong amount type"):
+        with pytest.raises(WrongAmountType):
             self.src_account.transfer_to(self.src_account, "42")
